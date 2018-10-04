@@ -5,18 +5,11 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Handler;
-
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_WECHAT;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_WECHAT;
 
 
 /**
@@ -50,15 +43,6 @@ public class HKApplication extends Application {
         app = this;
         // 程序崩溃时触发线程  以下用来捕获程序崩溃异常并重启应用
         //Thread.setDefaultUncaughtExceptionHandler(restartHandler);
-
-        //广播也再次注册一下。。。机型兼容。。。
-        if (!ReceiverMain.mIsInit) {
-            IntentFilter filter = new IntentFilter(RECEIVE_QR_WECHAT);
-            filter.addAction(RECEIVE_QR_ALIPAY);
-            filter.addAction(RECEIVE_BILL_WECHAT);
-            filter.addAction(RECEIVE_BILL_ALIPAY);
-            registerReceiver(new ReceiverMain(), filter);
-        }
     }
 
 

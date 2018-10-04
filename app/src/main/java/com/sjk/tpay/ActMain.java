@@ -129,6 +129,15 @@ public class ActMain extends AppCompatActivity {
         startService(new Intent(this, ServiceMain.class));
         startService(new Intent(this, ServiceProtect.class));
 
+        //广播也再次注册一下。。。机型兼容。。。
+        if (!ReceiverMain.mIsInit) {
+            IntentFilter filter = new IntentFilter(RECEIVE_QR_WECHAT);
+            filter.addAction(RECEIVE_QR_ALIPAY);
+            filter.addAction(RECEIVE_BILL_WECHAT);
+            filter.addAction(RECEIVE_BILL_ALIPAY);
+            registerReceiver(new ReceiverMain(), filter);
+        }
+
     }
 
 
