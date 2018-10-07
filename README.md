@@ -6,7 +6,7 @@ Tpay是微信和支付宝的个人免签全自动回调支付系统 资金直达
 ### Tpay：全自动，零人工，24小时自动发卡等操作
 ### ------------------------------------我是排版华丽分割线-----------------------------------------------
 ### Tpay：测试地址
- - 本项目已经部署到线下，可以点此在线测试：http://www.paohuituan.com/pay/getfile.html
+ - 本项目已经部署到线下，可以点此在线测试：http://www.paohuituan.com/pay
  - 底部有提供开源服务端，都开源了吧
  
 ### Tpay：现有其它项目缺点
@@ -52,13 +52,13 @@ Tpay是微信和支付宝的个人免签全自动回调支付系统 资金直达
  
 ### Tpay：使用流程
  - 1、安装Xposed框架，不想root的安装virtualxposed也可以。
- - 2、用户下载源码编译安装到手机，不会的可以在这里下载已经编译好的源码：http://www.paohuituan.com/pay/getfile.html
+ - 2、用户下载源码编译安装到手机，不会的可以在这里下载已经编译好的源码：http://www.paohuituan.com/pay
  - 3、后台中有一个文件是配置文件，把配置文件中的值设置来和手机一样
  - 4、在xposed中打勾并重启手机后，先后启动微信和支付宝即可。
 
 ### Tpay：技术交流
  - QQ技术群：524901982（群共享有相关的详细资料）
- - 项目测试：http://wwww.paohuituan.com/pay/getfile.html
+ - 项目测试：http://wwww.paohuituan.com/pay
  
  
 ### Tpay：感谢捐赠
