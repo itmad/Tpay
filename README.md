@@ -7,7 +7,7 @@ Tpay是微信和支付宝的个人免签全自动回调支付系统 资金直达
 ### ------------------------------------我是排版华丽分割线-----------------------------------------------
 ### Tpay：测试地址
  - 本项目已经部署到线下，可以点此在线测试：http://www.paohuituan.com/pay
- - 视频教程也发布了，熟练后几分钟即可发布：http://v.youku.com/v_show/id_XMzg1Mjc5NTE0NA==.html
+ - 视频教程也发布了，熟练后几分钟即可发布：[![Watch the video](http://std.superlist.yaodenglu.com/player_pic.jpg)](http://v.youku.com/v_show/id_XMzg1Mjc5NTE0NA==.html)
  - 底部有提供开源服务端，都开源了吧
  
 ### Tpay：现有其它项目缺点
