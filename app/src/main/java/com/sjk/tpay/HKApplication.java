@@ -42,7 +42,7 @@ public class HKApplication extends Application {
 
         app = this;
         // 程序崩溃时触发线程  以下用来捕获程序崩溃异常并重启应用
-        //Thread.setDefaultUncaughtExceptionHandler(restartHandler);
+        Thread.setDefaultUncaughtExceptionHandler(restartHandler);
     }
 
 
@@ -89,6 +89,7 @@ public class HKApplication extends Application {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("auto", true);
         app.startActivity(intent);
         android.os.Process.killProcess(android.os.Process.myPid());  //结束进程之前可以把你程序的注销或者退出代码放在这段代码之前
     }
