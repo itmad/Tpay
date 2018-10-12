@@ -1,6 +1,10 @@
 package com.sjk.tpay;
 
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -23,7 +27,9 @@ import com.sjk.tpay.po.Configer;
 import com.sjk.tpay.utils.PayUtils;
 import com.sjk.tpay.utils.SaveUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.sjk.tpay.HookMain.RECEIVE_BILL_ALIPAY;
@@ -137,7 +143,7 @@ public class ActMain extends AppCompatActivity {
             filter.addAction(RECEIVE_BILL_ALIPAY);
             registerReceiver(new ReceiverMain(), filter);
         }
-
+        addStatusBar();
     }
 
 
@@ -189,6 +195,29 @@ public class ActMain extends AppCompatActivity {
         mEdtPage.setText(Configer.getInstance().getPage());
         mEdtTimeNor.setText(Configer.getInstance().getDelay_nor() + "");
         mEdtTimeSlow.setText(Configer.getInstance().getDelay_slow() + "");
+        if (getIntent().hasExtra("auto")) {
+            clsSubmit(null);
+        }
+    }
+
+    /**
+     * 在状态栏添加图标
+     */
+    private void addStatusBar() {
+        NotificationManager manager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.cancelAll();
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0, getIntent(), 0);
+        Notification noti = new Notification.Builder(this)
+                .setTicker("程序启动成功")
+                .setContentTitle("看到我，说明我在后台正常运行")
+                .setContentText("始于：" + new SimpleDateFormat("MM-dd HH:mm:ss").format(new Date()))
+                .setSmallIcon(R.mipmap.ic_launcher)//设置图标
+                .setDefaults(Notification.DEFAULT_SOUND)//设置声音
+                .setContentIntent(pi)//点击之后的页面
+                .build();
+
+        manager.notify(17952, noti);
     }
 
 
