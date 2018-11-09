@@ -66,6 +66,7 @@ public class ApiBll {
                 .append(URLEncoder.encode(mark_sell, "utf-8"));
         mQueue.add(new FastJsonRequest(stringBuilder.toString(), succ, null));
         //LogUtils.show(stringBuilder.toString());
+        mQueue.start();
         dealTaskList();
     }
 

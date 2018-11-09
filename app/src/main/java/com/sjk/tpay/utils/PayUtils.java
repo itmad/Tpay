@@ -31,8 +31,8 @@ import de.robv.android.xposed.XposedHelpers;
  */
 public class PayUtils {
 
-    //软件首次启动后，只处理支付最近xxx秒的订单，默认为只处理最近20分钟的订单
-    private final static int ALIPAY_BILL_TIME = 1200 * 1000;
+    //软件首次启动后，只处理支付最近xxx秒的订单，默认为只处理最近1小时的订单
+    private final static int ALIPAY_BILL_TIME = 3600 * 1000;
 
     private static PayUtils mPayUtils;
 
