@@ -141,12 +141,6 @@ public class HookWechat {
             @Override
             protected void afterHookedMethod(MethodHookParam param)
                     throws Throwable {
-//				  double money=XposedHelpers.getDoubleField(param.thisObject, "llG");
-//                来源在源码搜索类似如下
-//                hashMap.put("fee", Math.round(100.0d * d));
-//                hashMap.put("fee_type", str);
-//                hashMap.put("desc", URLEncoder.encode(str2, "UTF-8"));
-//               也可以搜索jSONObject.optString("pay_url");这个很准
 
                 QrBean qrBean = new QrBean();
                 qrBean.setChannel(QrBean.WECHAT);
@@ -216,45 +210,6 @@ public class HookWechat {
                         XposedHelpers.callMethod(param.thisObject, "a", obj, true, true);
                     }
                 });
-    }
-
-
-    /**
-     * 这里是模拟备用方案，放着万一有用时再查看
-     */
-    private void noMock() {
-        //下面是模拟实现的方案，备用，暂时是没有用的。
-
-        //获取WalletFormView控件
-//        Field WalletFormViewField = XposedHelpers.findField(param.thisObject.getClass(), "itl");
-//        Object WalletFormView = WalletFormViewField.get(param.thisObject);
-//        Class<?> WalletFormViewClass = XposedHelpers.findClass("com.tencent.mm.wallet_core.ui.formview.WalletFormView", appClassLoader);
-//        //获取金额控件，类型是TenpaySecureEditText
-//        Field AefField = XposedHelpers.findField(WalletFormViewClass, "vQa");
-//        Object editView = AefField.get(WalletFormView);
-//        //call设置金额方法
-//        XposedHelpers.callMethod(editView, "setText", money);
-//
-//        //call设置备注方法，源代码如下
-////                        public final boolean m(CharSequence charSequence) {
-////                            if (bj.bl(charSequence.toString())) {
-////                                CollectCreateQRCodeUI.a(this.ito.itn, "");
-////                                CollectCreateQRCodeUI.c(this.ito.itn);
-////                            } else {
-////                                CollectCreateQRCodeUI.a(this.ito.itn, charSequence.toString());
-////                                CollectCreateQRCodeUI.c(this.ito.itn);
-////                            }
-////                            return true;
-////                        }
-//        Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI", appClassLoader);
-//        XposedHelpers.callStaticMethod(clazz, "a", param.thisObject, mark);
-//        XposedHelpers.callStaticMethod(clazz, "c", param.thisObject);
-//
-//        //点击确定，这个数字来源于如下源码
-//        //CollectCreateQRCodeUI的initView里面有下面一句，找到next_btn即可
-//        //((Button) findViewById(a$f.next_btn)).setOnClickListener(new CollectCreateQRCodeUI$3(this));
-//        Button click = (Button) XposedHelpers.callMethod(param.thisObject, "findViewById", 2131756941);
-//        click.performClick();
     }
 
 }

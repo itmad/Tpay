@@ -98,8 +98,9 @@ public class HookMain implements IXposedHookLoadPackage {
                             intentFilter.addAction(ALIPAY_CREAT_QR);
                             context.registerReceiver(startAlipay, intentFilter);
                             LogUtils.show("Tpay支付宝初始化成功");
+                            LogUtils.show("很多人在倒卖这套系统，大家请不要上当！QQ315096953");
                             Toast.makeText(context, "Tpay支付宝初始化成功", Toast.LENGTH_LONG).show();
-                            //开源也拒绝完全伸手党~~~^.^
+                            //很多人在倒卖这套系统，大家请不要上当！QQ315096953
                             //new HookAlipay().hook(appClassLoader, context);
                         }
                     }

@@ -13,6 +13,7 @@ import java.util.Date;
  */
 public class AliBillList {
 
+    //没用的字段我注释掉了
     private String consumerName;
     //    private String id;
 //    private String tradeStatus;

@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSON;
 /**
  * @ Created by Dlg
  * @ <p>TiTle:  QrBean</p>
- * @ <p>Description: 这个最基本的二维码信息Bean类了</p>
+ * @ <p>Description: 这个最基本的二维码信息Bean类了，处理不返回null</p>
  * @ date:  2018/9/21
  * @ QQ群：524901982
  */

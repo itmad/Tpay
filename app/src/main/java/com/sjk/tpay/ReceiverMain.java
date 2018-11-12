@@ -43,17 +43,21 @@ public class ReceiverMain extends BroadcastReceiver {
             }
             lastMsg = intent.getStringExtra("data");
             //LogUtils.show("Receiver--->" + intent.getAction());
-            if (intent.getAction().contentEquals(RECEIVE_QR_WECHAT)) {//创建成功二维码的消息
-                QrBean qrBean = JSON.parseObject(lastMsg, QrBean.class);
-                mApiBll.sendQR(qrBean.getUrl(), qrBean.getMark_sell());
-            } else if (intent.getAction().contentEquals(RECEIVE_BILL_WECHAT)) {
-                QrBean qrBean = JSON.parseObject(lastMsg, QrBean.class);
-                mApiBll.payQR(qrBean);
-            } else if (intent.getAction().contentEquals(RECEIVE_QR_ALIPAY)) {
-                //QrBean qrBean = JSON.parseObject(lastMsg, QrBean.class);
-                //mApiBll.sendQR(qrBean.getUrl(), qrBean.getMark_sell());
-            } else if (intent.getAction().contentEquals(RECEIVE_BILL_ALIPAY)) {
-                //PayUtils.dealAlipayWebTrade(context, lastMsg);
+            switch (intent.getAction()) {
+                case RECEIVE_QR_WECHAT:
+                    QrBean qrBean = JSON.parseObject(lastMsg, QrBean.class);
+                    mApiBll.sendQR(qrBean.getUrl(), qrBean.getMark_sell());
+                    break;
+                case RECEIVE_BILL_WECHAT:
+                    qrBean = JSON.parseObject(lastMsg, QrBean.class);
+                    mApiBll.payQR(qrBean);
+                    break;
+                case RECEIVE_QR_ALIPAY:
+
+                    break;
+                case RECEIVE_BILL_ALIPAY:
+
+                    break;
             }
         } catch (Exception e) {
             LogUtils.show(e.getMessage());
