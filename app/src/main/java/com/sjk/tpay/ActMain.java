@@ -154,6 +154,7 @@ public class ActMain extends AppCompatActivity {
      */
     public void clsWechatPay(View view) {
         String time = System.currentTimeMillis() / 1000 + "";
+        Toast.makeText(this, "只要能打开收款页面即表示成功，并不会输入和生成二维码", Toast.LENGTH_SHORT).show();
         PayUtils.getInstance().creatWechatQr(this, 12, "test" + time);
     }
 

@@ -16,6 +16,7 @@ import com.sjk.tpay.po.AliBillList;
 import com.sjk.tpay.po.QrBean;
 import com.sjk.tpay.request.StringRequestGet;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -59,7 +60,7 @@ public class PayUtils {
         Intent broadCastIntent = new Intent();
         broadCastIntent.setAction(HookMain.WECHAT_CREAT_QR);
         broadCastIntent.putExtra("mark", mark);
-        broadCastIntent.putExtra("money", String.valueOf(money / 100.0f));
+        broadCastIntent.putExtra("money", formatMoneyToCent(money + ""));
         context.sendBroadcast(broadCastIntent);
     }
 
@@ -81,9 +82,31 @@ public class PayUtils {
         Intent broadCastIntent = new Intent();
         broadCastIntent.setAction(HookMain.ALIPAY_CREAT_QR);
         broadCastIntent.putExtra("mark", mark);
-        broadCastIntent.putExtra("money", String.valueOf(money / 100.0f));
+        broadCastIntent.putExtra("money", formatMoneyToYuan(money + ""));
         context.sendBroadcast(broadCastIntent);
     }
 
+    /**
+     * 格式化金钱，把元变为分的单位
+     *
+     * @param money
+     * @return
+     */
+    public static Integer formatMoneyToCent(String money) {
+        return Integer.valueOf(new DecimalFormat("#").format(Float.valueOf(money.trim()) * 100));
+    }
 
+    /**
+     * 格式化金钱，把分变为元的单位
+     *
+     * @param money
+     * @return
+     */
+    public static String formatMoneyToYuan(String money) {
+        String yuan = new DecimalFormat("#.00").format(Float.valueOf(money.trim()) / 100f);
+        if (yuan.startsWith(".")) {
+            yuan = "0" + yuan;
+        }
+        return yuan;
+    }
 }
