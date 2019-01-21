@@ -6,7 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -32,10 +32,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_WECHAT;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_WECHAT;
 import static com.sjk.tpay.ServiceMain.mIsRunning;
 
 /**
@@ -134,18 +130,32 @@ public class ActMain extends AppCompatActivity {
         //有的手机就算已经静态注册服务还是不行启动，我再手动启动一下吧。
         startService(new Intent(this, ServiceMain.class));
         startService(new Intent(this, ServiceProtect.class));
-
-        //广播也再次注册一下。。。机型兼容。。。
-        if (!ReceiverMain.mIsInit) {
-            IntentFilter filter = new IntentFilter(RECEIVE_QR_WECHAT);
-            filter.addAction(RECEIVE_QR_ALIPAY);
-            filter.addAction(RECEIVE_BILL_WECHAT);
-            filter.addAction(RECEIVE_BILL_ALIPAY);
-            registerReceiver(new ReceiverMain(), filter);
-        }
         addStatusBar();
     }
 
+    private void checkAppVersionEnable() {
+        if (getPackageInfo(HookWechat.getInstance().getPackPageName()) != null
+                && !getPackageInfo(HookWechat.getInstance().getPackPageName()).versionName.contentEquals("6.7.2")) {
+            Toast.makeText(ActMain.this, "微信版本不对！官方下载版本号：6.7.2", Toast.LENGTH_SHORT).show();
+        }
+        if (getPackageInfo(HookAlipay.getInstance().getPackPageName()) != null
+                && !getPackageInfo(HookAlipay.getInstance().getPackPageName()).versionName.contentEquals("10.1.35.828")) {
+            Toast.makeText(ActMain.this, "支付宝版本不对！官方下载版本号：10.1.35.828", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private PackageInfo getPackageInfo(String packageName) {
+        PackageInfo pInfo = null;
+        try {
+            //通过PackageManager可以得到PackageInfo
+            PackageManager pManager = getPackageManager();
+            pInfo = pManager.getPackageInfo(packageName, PackageManager.GET_CONFIGURATIONS);
+            return pInfo;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pInfo;
+    }
 
     /**
      * 测试微信获取二维码的功能
@@ -155,7 +165,7 @@ public class ActMain extends AppCompatActivity {
     public void clsWechatPay(View view) {
         String time = System.currentTimeMillis() / 1000 + "";
         Toast.makeText(this, "只要能打开收款页面即表示成功，并不会输入和生成二维码", Toast.LENGTH_SHORT).show();
-        PayUtils.getInstance().creatWechatQr(this, 12, "test" + time);
+        HookWechat.getInstance().creatQrTask(12, "test" + time);
     }
 
 
@@ -166,8 +176,8 @@ public class ActMain extends AppCompatActivity {
      */
     public void clsAlipayPay(View view) {
         String time = System.currentTimeMillis() / 1000 + "";
-        PayUtils.getInstance().creatAlipayQr(this, 12, "test" + time);
-        Toast.makeText(this,"此功能可以加群获取支付宝版哦",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "此功能可以加群获取支付宝版哦", Toast.LENGTH_SHORT).show();
+        HookAlipay.getInstance().creatQrTask(12, "test" + time);
     }
 
     /**

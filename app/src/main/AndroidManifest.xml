@@ -47,19 +47,6 @@
             android:enabled="true"
             android:exported="true" />
 
-        <receiver
-            android:name=".ReceiverMain"
-            android:enabled="true"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.wechat.qr.receive" />
-                <action android:name="com.alipay.qr.receive" />
-                <action android:name="com.wechat.bill.receive" />
-                <action android:name="com.alipay.bill.receive" />
-            </intent-filter>
-        </receiver>
-
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.tiantiankaihei.sjk.${FILE_PROVIDE}"
@@ -79,7 +66,7 @@
         <!-- 模块描述，显示在xposed模块列表那里第二行 -->
         <meta-data
             android:name="xposeddescription"
-            android:value="Tpay个人支付模块 QQ群：524901982" />
+            android:value="Tpay个人支付模块 QQ：315096953，源码并无问题，请按视频正确操作即可。" />
 
         <!-- 最低xposed版本号(lib文件名可知) -->
         <meta-data

@@ -34,8 +34,6 @@ public class ServiceMain extends Service {
     //防止被休眠，你们根据情况可以开关，我是一直打开的，有点费电是必然的，哈哈
     private PowerManager.WakeLock mWakeLock;
 
-    private ApiBll mApiBll;
-
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -52,7 +50,6 @@ public class ServiceMain extends Service {
         mWakeLock.acquire();
 
         LogUtils.show("服务启动");
-        mApiBll = new ApiBll();
         if (!handler.hasMessages(0)) {
             handler.sendEmptyMessage(0);
         }
@@ -70,7 +67,7 @@ public class ServiceMain extends Service {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             if (mIsRunning) {//停止任务的时候，不会去轮循
-                mApiBll.checkQR();
+                ApiBll.getInstance().checkQR();
             }
             if (handler.hasMessages(0)) {
                 return;

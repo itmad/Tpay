@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 
@@ -43,6 +44,8 @@ public class HKApplication extends Application {
         app = this;
         // 程序崩溃时触发线程  以下用来捕获程序崩溃异常并重启应用
         Thread.setDefaultUncaughtExceptionHandler(restartHandler);
+        HookList.getInstance();
+        registerReceiver(new ReceiverMain(), new IntentFilter(HookBase.RECV_ACTION));
     }
 
 
