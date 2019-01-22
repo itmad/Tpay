@@ -40,7 +40,7 @@ public class HookMain implements IXposedHookLoadPackage {
 
 
         for (HookBase hookBase : HookList.getInstance().getmListHook()) {
-            //下面的hookCountIndex为2是在vxp里的值，如果手机已root是在xp里运行请改为1，然后把我这行中文删除即可
+            下面的hookCountIndex为2是在vxp里的值，如果手机已root是在xp里运行请改为1，然后把我这行中文删除即可
             hookBase.hook(packageName, processName, 1);
             //LogUtils.show("很多人在倒卖这套系统，大家请不要上当！QQ315096953");
         }
