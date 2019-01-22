@@ -2,15 +2,16 @@ package com.sjk.tpay;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.WindowManager;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.sjk.tpay.imp.CallBackDo;
 import com.sjk.tpay.po.QrBean;
 import com.sjk.tpay.utils.LogUtils;
+import com.sjk.tpay.utils.PayUtils;
 import com.sjk.tpay.utils.XmlToJson;
 
 import java.lang.reflect.Field;
@@ -19,33 +20,73 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
-/**
- * @ Created by Dlg
- * @ <p>TiTle:  HookWechat</p>
- * @ <p>Description:微信的主要HOOK类</p>
- * @ date:  2018/09/22
- * @ QQ群：524901982
- */
-public class HookWechat {
 
-    protected void hook(final ClassLoader appClassLoader, final Context context) {
-        try {
-            hookBill(appClassLoader, context);
-            hookQRCreat(appClassLoader, context);
-            hookQRWindows(appClassLoader);
-        } catch (Exception e) {
+public class HookWechat extends HookBase {
+
+    private static HookWechat mHookWechat;
+
+    public static synchronized HookWechat getInstance() {
+        if (mHookWechat == null) {
+            mHookWechat = new HookWechat();
         }
+        return mHookWechat;
     }
 
 
-    /**
-     * Hook微信收到订单消息后的处理
-     *
-     * @param appClassLoader
-     * @param context
-     */
-    private void hookBill(final ClassLoader appClassLoader, final Context context) {
-        XposedHelpers.findAndHookMethod("com.tencent.wcdb.database.SQLiteDatabase", appClassLoader, "insert", String.class, String.class, ContentValues.class,
+    @Override
+    public void hookFirst() throws Error, Exception {
+        //关屏也能打码，和打码的实现
+        hookQRWindows();
+    }
+
+    @Override
+    public void hookCreatQr() throws Error, Exception {
+        Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", mAppClassLoader);
+        XposedBridge.hookAllMethods(clazz, "a", new XC_MethodHook() {
+
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param)
+                    throws Throwable {
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param)
+                    throws Throwable {
+                try {
+                    QrBean qrBean = new QrBean();
+                    qrBean.setChannel(QrBean.WECHAT);
+
+                    Field moneyField = XposedHelpers.findField(param.thisObject.getClass(), "iqu");
+                    Double money = (Double) moneyField.get(param.thisObject);
+
+                    Field markField = XposedHelpers.findField(param.thisObject.getClass(), "desc");
+                    String mark = (String) markField.get(param.thisObject);
+
+                    Field payurlField = XposedHelpers.findField(param.thisObject.getClass(), "iqt");
+                    String payurl = (String) payurlField.get(param.thisObject);
+
+
+                    LogUtils.show("微信成功生成二维码：" + money.floatValue() + "|" + mark);
+                    qrBean.setMark_sell(mark);
+                    qrBean.setUrl(payurl);
+                    qrBean.setMoney(PayUtils.formatMoneyToCent(money.floatValue() + ""));
+
+                    Intent broadCastIntent = new Intent();
+                    broadCastIntent.setAction(RECV_ACTION);
+                    broadCastIntent.putExtra(RECV_ACTION_DATE, qrBean.toString());
+                    broadCastIntent.putExtra(RECV_ACTION_TYPE, getReceiveQrActionType());
+                    mContext.sendBroadcast(broadCastIntent);
+                } catch (Error | Exception ignore) {
+
+                }
+            }
+        });
+    }
+
+    @Override
+    public void hookBill() throws Error, Exception {
+        XposedHelpers.findAndHookMethod("com.tencent.wcdb.database.SQLiteDatabase",
+                mAppClassLoader, "insert", String.class, String.class, ContentValues.class,
                 new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param)
@@ -57,10 +98,7 @@ public class HookWechat {
                                 return;
                             }
                             Integer type = contentValues.getAsInteger("type");
-                            if (null == type) {
-                                return;
-                            }
-                            if (type == 318767153) {
+                            if (type != null && type == 318767153) {
                                 JSONObject msg = XmlToJson.documentToJSONObject(contentValues.getAsString("content"))
                                         .getJSONObject("appmsg");
                                 if (!msg.getString("type").equals("5")) {
@@ -102,114 +140,92 @@ public class HookWechat {
                                                 .getString("word"));
                                     }
                                 }
+                                if (TextUtils.isEmpty(qrBean.getMark_sell())) {
+                                    return;
+                                }
 
-                                LogUtils.show("微信收到支付订单：" + qrBean.getOrder_id()
-                                        + "|" + qrBean.getMoney() + "|" + qrBean.getMark_sell() + "|" + qrBean.getMark_buy());
+                                LogUtils.show("微信收到支付订单：" + qrBean.getMoney() + "|" + qrBean.getMark_sell() + "|" + qrBean.getMark_buy());
 
                                 Intent broadCastIntent = new Intent();
-                                broadCastIntent.putExtra("data", qrBean.toString());
-                                broadCastIntent.setAction(HookMain.RECEIVE_BILL_WECHAT);
-                                context.sendBroadcast(broadCastIntent);
+                                broadCastIntent.setAction(RECV_ACTION);
+                                broadCastIntent.putExtra(RECV_ACTION_DATE, qrBean.toString());
+                                broadCastIntent.putExtra(RECV_ACTION_TYPE, getReceiveBillActionType());
+                                mContext.sendBroadcast(broadCastIntent);
                             }
-                        } catch (Exception e) {
-                            LogUtils.show(e.getMessage());
-                        }
-                    }
+                        } catch (Error | Exception e) {
 
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param)
-                            throws Throwable {
+                        }
                     }
                 });
     }
 
-    /**
-     * hook二维码生成后操作，目的是为了得到创建二维码的url链接
-     *
-     * @param appClassLoader
-     * @param context
-     */
-    private void hookQRCreat(final ClassLoader appClassLoader, final Context context) {
-        Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", appClassLoader);
-        XposedBridge.hookAllMethods(clazz, "a", new XC_MethodHook() {
-
+    @Override
+    public void addRemoteTaskI() {
+        addRemoteTask(getRemoteQrActionType(), new CallBackDo() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param)
-                    throws Throwable {
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param)
-                    throws Throwable {
-
-                QrBean qrBean = new QrBean();
-                qrBean.setChannel(QrBean.WECHAT);
-
-                Field moneyField = XposedHelpers.findField(param.thisObject.getClass(), "iqu");
-                Double money = (Double) moneyField.get(param.thisObject);
-
-                Field markField = XposedHelpers.findField(param.thisObject.getClass(), "desc");
-                String mark = (String) markField.get(param.thisObject);
-
-                Field payurlField = XposedHelpers.findField(param.thisObject.getClass(), "iqt");
-                String payurl = (String) payurlField.get(param.thisObject);
-
-
-                LogUtils.show("微信成功生成二维码：" + money.floatValue() + "  " + mark + "  " + payurl);
-                qrBean.setMark_sell(mark);
-                qrBean.setUrl(payurl);
-
-                Intent broadCastIntent = new Intent();
-                broadCastIntent.putExtra("data", qrBean.toString());
-                broadCastIntent.setAction(HookMain.RECEIVE_QR_WECHAT);
-                context.sendBroadcast(broadCastIntent);
+            public void callBack(Intent intent) throws Error, Exception {
+                LogUtils.show("获取微信二维码");
+                Intent intent2 = new Intent(mContext, XposedHelpers.findClass(
+                        "com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI", mContext.getClassLoader()));
+                intent2.putExtra("mark", intent.getStringExtra("mark"));
+                intent2.putExtra("money", intent.getStringExtra("money"));
+                intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent2);
             }
         });
     }
 
-    /**
-     * 开始Hook二维码创建窗口，目的是为了创建生成二维码
-     *
-     * @param appClassLoader
-     * @throws Exception
-     */
-    private void hookQRWindows(final ClassLoader appClassLoader) {
-        Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI", appClassLoader);
+    @Override
+    public void addLocalTaskI() {
+        super.addLocalTaskI();
+    }
+
+    @Override
+    public String getPackPageName() {
+        return "com.tencent.mm";
+    }
+
+    @Override
+    public String getAppName() {
+        return "微信";
+    }
+
+
+    private void hookQRWindows() {
+        Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI", mAppClassLoader);
         XposedBridge.hookAllMethods(clazz, "onCreate", new XC_MethodHook() {
 
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-
-            }
-
-            @Override
             protected void afterHookedMethod(MethodHookParam param) {
-                LogUtils.show("Hook到微信窗口");
-                ((Activity) param.thisObject).getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+                try {
+                    ((Activity) param.thisObject).getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                            | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+                } catch (Error | Exception ignore) {
+
+                }
             }
         });
 
-        XposedHelpers.findAndHookMethod("com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI", appClassLoader, "initView",
-                new XC_MethodHook() {
-
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) {
-                    }
-
+        XposedHelpers.findAndHookMethod("com.tencent.mm.plugin.collect.ui.CollectCreateQRCodeUI",
+                mAppClassLoader, "initView", new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param)
                             throws Throwable {
-                        LogUtils.show("Hook微信开始......");
-                        Intent intent = ((Activity) param.thisObject).getIntent();
-                        String mark = intent.getStringExtra("mark");
-                        String money = intent.getStringExtra("money");
+                        try {
+                            Intent intent = ((Activity) param.thisObject).getIntent();
+                            String mark = intent.getStringExtra("mark");
+                            String money = intent.getStringExtra("money");
+                            if (TextUtils.isEmpty(mark)) {
+                                return;
+                            }
 
-                        Class<?> bs = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", appClassLoader);
-                        Object obj = XposedHelpers.newInstance(bs, Double.valueOf(money), "1", mark);
-                        XposedHelpers.callMethod(param.thisObject, "a", obj, true, true);
+                            Class<?> bs = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", mAppClassLoader);
+                            Object obj = XposedHelpers.newInstance(bs, Double.valueOf(money), "1", mark);
+                            XposedHelpers.callMethod(param.thisObject, "a", obj, true, true);
+                        } catch (Error | Exception ignore) {
+
+                        }
                     }
                 });
     }
-
 }

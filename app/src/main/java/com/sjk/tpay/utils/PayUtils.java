@@ -46,47 +46,6 @@ public class PayUtils {
 
 
     /**
-     * @param context
-     * @param money   金额，单位为分，范围1-30000000
-     * @param mark    收款备注，最长30个字符，不能为空
-     */
-    public void creatWechatQr(Context context, Integer money, String mark) {
-        if (money == null || TextUtils.isEmpty(mark)) {
-            return;
-        }
-        if (mark.length() > 30 || money > 30000000 || money < 1) {
-            return;
-        }
-        Intent broadCastIntent = new Intent();
-        broadCastIntent.setAction(HookMain.WECHAT_CREAT_QR);
-        broadCastIntent.putExtra("mark", mark);
-        broadCastIntent.putExtra("money", formatMoneyToCent(money + ""));
-        context.sendBroadcast(broadCastIntent);
-    }
-
-
-    /**
-     * 这里为了统一，要求就设置为和微信一样了。
-     *
-     * @param context
-     * @param money   金额，单位为分，范围1-30000000
-     * @param mark    收款备注，最长30个字符，不能为空
-     */
-    public void creatAlipayQr(Context context, Integer money, String mark) {
-        if (money == null || TextUtils.isEmpty(mark)) {
-            return;
-        }
-        if (mark.length() > 30 || money > 30000000 || money < 1) {
-            return;
-        }
-        Intent broadCastIntent = new Intent();
-        broadCastIntent.setAction(HookMain.ALIPAY_CREAT_QR);
-        broadCastIntent.putExtra("mark", mark);
-        broadCastIntent.putExtra("money", formatMoneyToYuan(money + ""));
-        context.sendBroadcast(broadCastIntent);
-    }
-
-    /**
      * 格式化金钱，把元变为分的单位
      *
      * @param money

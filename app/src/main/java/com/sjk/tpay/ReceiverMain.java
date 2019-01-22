@@ -4,16 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.alibaba.fastjson.JSON;
-import com.sjk.tpay.bll.ApiBll;
-import com.sjk.tpay.po.QrBean;
+import com.sjk.tpay.imp.CallBackDo;
 import com.sjk.tpay.utils.LogUtils;
-import com.sjk.tpay.utils.PayUtils;
 
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_BILL_WECHAT;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_ALIPAY;
-import static com.sjk.tpay.HookMain.RECEIVE_QR_WECHAT;
+import java.util.HashMap;
+import java.util.Set;
 
 
 /**
@@ -24,43 +19,33 @@ import static com.sjk.tpay.HookMain.RECEIVE_QR_WECHAT;
  * @ QQ群：524901982
  */
 public class ReceiverMain extends BroadcastReceiver {
-    private ApiBll mApiBll;
-    public static boolean mIsInit = false;
     private static String lastMsg = "";//防止重启接收广播，一定要用static
 
-    public ReceiverMain() {
-        super();
-        mIsInit = true;
-        LogUtils.show("Receiver创建成功！");
-        mApiBll = new ApiBll();
-    }
+    //本地广播的任务列表
+    public static HashMap<String, CallBackDo> mLocalTaskMap = new HashMap<>();
+
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        String data = intent.getStringExtra(HookBase.RECV_ACTION_DATE) + intent.getStringExtra(HookBase.RECV_ACTION_TYPE);
+        if (lastMsg.contentEquals(data)) {
+            return;
+        } else {
+            lastMsg = data;
+        }
+
         try {
-            if (lastMsg.contentEquals(intent.getStringExtra("data"))) {
-                return;
+            String type = intent.getStringExtra(HookBase.RECV_ACTION_TYPE);
+            LogUtils.show("onReceive：" + type + "|" + mLocalTaskMap);
+            Set<String> set = mLocalTaskMap.keySet();
+            for (String str : set) {
+                if (type.contentEquals(str)) {
+                    mLocalTaskMap.get(str).callBack(intent);
+                    return;
+                }
             }
-            lastMsg = intent.getStringExtra("data");
-            //LogUtils.show("Receiver--->" + intent.getAction());
-            switch (intent.getAction()) {
-                case RECEIVE_QR_WECHAT:
-                    QrBean qrBean = JSON.parseObject(lastMsg, QrBean.class);
-                    mApiBll.sendQR(qrBean.getUrl(), qrBean.getMark_sell());
-                    break;
-                case RECEIVE_BILL_WECHAT:
-                    qrBean = JSON.parseObject(lastMsg, QrBean.class);
-                    mApiBll.payQR(qrBean);
-                    break;
-                case RECEIVE_QR_ALIPAY:
-
-                    break;
-                case RECEIVE_BILL_ALIPAY:
-
-                    break;
-            }
-        } catch (Exception e) {
-            LogUtils.show(e.getMessage());
+        } catch (Error | Exception e) {
+            LogUtils.show("ReceiverMain错误：" + e.getMessage());
         }
     }
 

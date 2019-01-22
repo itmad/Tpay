@@ -8,6 +8,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.sjk.tpay.HKApplication;
+import com.sjk.tpay.HookAlipay;
+import com.sjk.tpay.HookWechat;
 import com.sjk.tpay.po.BaseMsg;
 import com.sjk.tpay.po.Configer;
 import com.sjk.tpay.po.QrBean;
@@ -29,10 +31,16 @@ import java.util.List;
  * @ QQ群：524901982
  */
 public class ApiBll {
+    private static ApiBll mApiBll;
+
     private RequestQueue mQueue;
 
-    public ApiBll() {
-        mQueue = Volley.newRequestQueue(HKApplication.app);
+    public static ApiBll getInstance() {
+        if (mApiBll == null) {
+            mApiBll = new ApiBll();
+            mApiBll.mQueue = Volley.newRequestQueue(HKApplication.app);
+        }
+        return mApiBll;
     }
 
     /**
@@ -53,21 +61,20 @@ public class ApiBll {
      * 发送服务器所需要的二维码字符串给服务器
      * 服务器如果有新订单，就会立马返回新的订单，手机端就不用再等下次轮循了
      *
-     * @param url       当前二维码的字符串
-     * @param mark_sell 收款方的备注
+     * @param qrBean 要发送的二维码参数
      */
-    public void sendQR(String url, String mark_sell) throws UnsupportedEncodingException {
+    public void sendQR(QrBean qrBean) throws UnsupportedEncodingException {
         StringBuilder stringBuilder = new StringBuilder(Configer.getInstance().getUrl())
                 .append(Configer.getInstance().getPage())
                 .append("?command=addqr")
                 .append("&url=")
-                .append(URLEncoder.encode(url, "utf-8"))
+                .append(URLEncoder.encode(qrBean.getUrl(), "utf-8"))
                 .append("&mark_sell=")
-                .append(URLEncoder.encode(mark_sell, "utf-8"));
+                .append(URLEncoder.encode(qrBean.getMark_sell(), "utf-8"));
         mQueue.add(new FastJsonRequest(stringBuilder.toString(), succ, null));
-        //LogUtils.show(stringBuilder.toString());
         mQueue.start();
         dealTaskList();
+        LogUtils.show("发送二维码：" + stringBuilder.toString());
     }
 
 
@@ -91,7 +98,6 @@ public class ApiBll {
                     .append(URLEncoder.encode(qrBean.getOrder_id(), "utf-8"))
                     .append("&mark_buy=")
                     .append(URLEncoder.encode(qrBean.getMark_buy(), "utf-8"));
-            //LogUtils.show(url.toString());
             mQueue.add(new FastJsonRequest(url.toString(), null, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
@@ -102,6 +108,7 @@ public class ApiBll {
                 }
             }));
             mQueue.start();
+            LogUtils.show("发送订单" + url.toString());
         } catch (Exception e) {
             addTaskList(qrBean);
         }
@@ -148,18 +155,16 @@ public class ApiBll {
     private final Response.Listener<BaseMsg> succ = new Response.Listener<BaseMsg>() {
         @Override
         public void onResponse(BaseMsg response) {
-			if (response == null) {
+            if (response == null) {
                 return;
             }
             QrBean qrBean = response.getData(QrBean.class);
             if (qrBean != null && qrBean.getMoney() > 0 && !TextUtils.isEmpty(qrBean.getMark_sell())) {
                 LogUtils.show("服务器需要新二维码：" + qrBean.getMoney() + "|" + qrBean.getMark_sell() + "|" + qrBean.getChannel());
                 if (qrBean.getChannel().contentEquals(QrBean.WECHAT)) {
-                    PayUtils.getInstance().creatWechatQr(HKApplication.app, qrBean.getMoney()
-                            , qrBean.getMark_sell());
+                    HookWechat.getInstance().creatQrTask(qrBean.getMoney(), qrBean.getMark_sell());
                 } else if (qrBean.getChannel().contentEquals(QrBean.ALIPAY)) {
-                    PayUtils.getInstance().creatAlipayQr(HKApplication.app, qrBean.getMoney()
-                            , qrBean.getMark_sell());
+                    HookAlipay.getInstance().creatQrTask(qrBean.getMoney(), qrBean.getMark_sell());
                 }
             }
         }
