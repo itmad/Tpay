@@ -25,7 +25,8 @@ import javax.crypto.spec.DESKeySpec;
  */
 public class StrEncode {
 
-
+    private final void  kk(String k,String kk){
+    }
     /**
      * DES加密
      *

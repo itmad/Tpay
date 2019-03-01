@@ -30,12 +30,7 @@ public class SaveUtils {
     /**
      * 保存用户支付成功消息，却没有成功通知服务器的列表，下次会继续尝试发送通知
      */
-    public final static String TASKL_LIST = "TASKL_LIST";
-    /**
-     * 上次最新处理的订单号，支付宝专用的上次处理订单编号，加快效率而已，不用去判断多余的订单
-     */
-    public final static String BILL_NUM_LAST = "BILL_NUM_LAST";
-
+    public final static String TASK_LIST = "TASK_LIST";
 
     public SaveUtils() {
         mSharedPreferences = PreferenceManager

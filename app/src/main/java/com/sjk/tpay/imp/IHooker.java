@@ -67,7 +67,7 @@ public interface IHooker {
      *
      * @return
      */
-    String getReceiveQrActionType();
+    String getLocalQrActionType();
 
 
     /**
@@ -75,7 +75,7 @@ public interface IHooker {
      *
      * @return
      */
-    String getReceiveBillActionType();
+    String getLocalBillActionType();
 
 
     /**

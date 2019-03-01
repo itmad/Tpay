@@ -15,7 +15,6 @@ import com.sjk.tpay.po.Configer;
 import com.sjk.tpay.po.QrBean;
 import com.sjk.tpay.request.FastJsonRequest;
 import com.sjk.tpay.utils.LogUtils;
-import com.sjk.tpay.utils.PayUtils;
 import com.sjk.tpay.utils.SaveUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -120,10 +119,10 @@ public class ApiBll {
      */
     private void dealTaskList() {
         SaveUtils saveUtils = new SaveUtils();
-        List<QrBean> list = saveUtils.getJsonArray(SaveUtils.TASKL_LIST, QrBean.class);
+        List<QrBean> list = saveUtils.getJsonArray(SaveUtils.TASK_LIST, QrBean.class);
         if (list != null) {
             //先清空任务，如果呆会儿在payQR里又失败的话，会自动又添加的。
-            saveUtils.put(SaveUtils.TASKL_LIST, null).commit();
+            saveUtils.putJson(SaveUtils.TASK_LIST, null).commit();
             for (QrBean qrBean : list) {
                 payQR(qrBean);
             }
@@ -140,12 +139,12 @@ public class ApiBll {
      */
     private synchronized static void addTaskList(QrBean qrBean) {
         SaveUtils saveUtils = new SaveUtils();
-        List<QrBean> list = saveUtils.getJsonArray(SaveUtils.TASKL_LIST, QrBean.class);
+        List<QrBean> list = saveUtils.getJsonArray(SaveUtils.TASK_LIST, QrBean.class);
         if (list == null) {
             list = new ArrayList<>();
         }
         list.add(qrBean);
-        saveUtils.putJson(SaveUtils.TASKL_LIST, list).commit();
+        saveUtils.putJson(SaveUtils.TASK_LIST, list).commit();
     }
 
 

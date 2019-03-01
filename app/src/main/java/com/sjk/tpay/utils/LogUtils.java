@@ -19,7 +19,20 @@ public class LogUtils {
         } catch (NoClassDefFoundError ignore) {
 
         }
-        Log.e("LogUtils", tips);
+        Log.e("LogUtils", getFunctionName() + tips);
     }
 
+    private static String getFunctionName() {
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        if (stackTrace != null) {
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                if (!stackTraceElement.isNativeMethod() && !stackTraceElement.getClassName().equals(Thread.class.getName())
+                        && !stackTraceElement.getFileName().contentEquals("LogUtils.java")) {
+                    return "[ " + Thread.currentThread().getName() + ": " + stackTraceElement.getFileName()
+                            + ":" + stackTraceElement.getLineNumber() + " " + stackTraceElement.getMethodName() + " ]";
+                }
+            }
+        }
+        return null;
+    }
 }

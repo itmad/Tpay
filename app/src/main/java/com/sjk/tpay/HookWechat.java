@@ -10,11 +10,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.sjk.tpay.imp.CallBackDo;
 import com.sjk.tpay.po.QrBean;
+import com.sjk.tpay.utils.ReflecUtils;
 import com.sjk.tpay.utils.LogUtils;
 import com.sjk.tpay.utils.PayUtils;
 import com.sjk.tpay.utils.XmlToJson;
-
-import java.lang.reflect.Field;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -42,45 +41,42 @@ public class HookWechat extends HookBase {
     @Override
     public void hookCreatQr() throws Error, Exception {
         Class<?> clazz = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", mAppClassLoader);
-        XposedBridge.hookAllMethods(clazz, "a", new XC_MethodHook() {
+        XposedHelpers.findAndHookMethod(clazz, "a",
+                int.class, String.class, org.json.JSONObject.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param)
+                            throws Throwable {
+                    }
 
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param)
-                    throws Throwable {
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param)
-                    throws Throwable {
-                try {
-                    QrBean qrBean = new QrBean();
-                    qrBean.setChannel(QrBean.WECHAT);
-
-                    Field moneyField = XposedHelpers.findField(param.thisObject.getClass(), "iqu");
-                    Double money = (Double) moneyField.get(param.thisObject);
-
-                    Field markField = XposedHelpers.findField(param.thisObject.getClass(), "desc");
-                    String mark = (String) markField.get(param.thisObject);
-
-                    Field payurlField = XposedHelpers.findField(param.thisObject.getClass(), "iqt");
-                    String payurl = (String) payurlField.get(param.thisObject);
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param)
+                            throws Throwable {
+                        try {
+                            QrBean qrBean = new QrBean();
+                            qrBean.setChannel(QrBean.WECHAT);
+                            Double money = ReflecUtils.findField(param.thisObject.getClass(), double.class, 0, false)
+                                    .getDouble(param.thisObject);
+                            String mark = (String) ReflecUtils.findField(param.thisObject.getClass(), String.class, 1, false)
+                                    .get(param.thisObject);
+                            String payurl = (String) ReflecUtils.findField(param.thisObject.getClass(), String.class, 2, false)
+                                    .get(param.thisObject);
 
 
-                    LogUtils.show("微信成功生成二维码：" + money.floatValue() + "|" + mark);
-                    qrBean.setMark_sell(mark);
-                    qrBean.setUrl(payurl);
-                    qrBean.setMoney(PayUtils.formatMoneyToCent(money.floatValue() + ""));
+                            LogUtils.show("微信成功生成二维码：" + money.floatValue() + "|" + mark);
+                            qrBean.setMark_sell(mark);
+                            qrBean.setUrl(payurl);
+                            qrBean.setMoney(PayUtils.formatMoneyToCent(money.floatValue() + ""));
+                            qrBean.setChannel(QrBean.WECHAT);
 
-                    Intent broadCastIntent = new Intent();
-                    broadCastIntent.setAction(RECV_ACTION);
-                    broadCastIntent.putExtra(RECV_ACTION_DATE, qrBean.toString());
-                    broadCastIntent.putExtra(RECV_ACTION_TYPE, getReceiveQrActionType());
-                    mContext.sendBroadcast(broadCastIntent);
-                } catch (Error | Exception ignore) {
-
-                }
-            }
-        });
+                            Intent broadCastIntent = new Intent(RECV_ACTION);
+                            broadCastIntent.putExtra(RECV_ACTION_DATE, qrBean.toString());
+                            broadCastIntent.putExtra(RECV_ACTION_TYPE, getLocalQrActionType());
+                            mContext.sendBroadcast(broadCastIntent);
+                        } catch (Error | Exception ignore) {
+                            LogUtils.show(ignore.getMessage());
+                        }
+                    }
+                });
     }
 
     @Override
@@ -146,10 +142,9 @@ public class HookWechat extends HookBase {
 
                                 LogUtils.show("微信收到支付订单：" + qrBean.getMoney() + "|" + qrBean.getMark_sell() + "|" + qrBean.getMark_buy());
 
-                                Intent broadCastIntent = new Intent();
-                                broadCastIntent.setAction(RECV_ACTION);
+                                Intent broadCastIntent = new Intent(RECV_ACTION);
                                 broadCastIntent.putExtra(RECV_ACTION_DATE, qrBean.toString());
-                                broadCastIntent.putExtra(RECV_ACTION_TYPE, getReceiveBillActionType());
+                                broadCastIntent.putExtra(RECV_ACTION_TYPE, getLocalBillActionType());
                                 mContext.sendBroadcast(broadCastIntent);
                             }
                         } catch (Error | Exception e) {
@@ -218,12 +213,12 @@ public class HookWechat extends HookBase {
                             if (TextUtils.isEmpty(mark)) {
                                 return;
                             }
-
                             Class<?> bs = XposedHelpers.findClass("com.tencent.mm.plugin.collect.b.s", mAppClassLoader);
                             Object obj = XposedHelpers.newInstance(bs, Double.valueOf(money), "1", mark);
+
                             XposedHelpers.callMethod(param.thisObject, "a", obj, true, true);
                         } catch (Error | Exception ignore) {
-
+                            LogUtils.show(ignore.getMessage()+"");
                         }
                     }
                 });

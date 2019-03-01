@@ -2,6 +2,7 @@ package com.sjk.tpay;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -130,18 +131,6 @@ public class ActMain extends AppCompatActivity {
         //有的手机就算已经静态注册服务还是不行启动，我再手动启动一下吧。
         startService(new Intent(this, ServiceMain.class));
         startService(new Intent(this, ServiceProtect.class));
-        addStatusBar();
-    }
-
-    private void checkAppVersionEnable() {
-        if (getPackageInfo(HookWechat.getInstance().getPackPageName()) != null
-                && !getPackageInfo(HookWechat.getInstance().getPackPageName()).versionName.contentEquals("6.7.2")) {
-            Toast.makeText(ActMain.this, "微信版本不对！官方下载版本号：6.7.2", Toast.LENGTH_SHORT).show();
-        }
-        if (getPackageInfo(HookAlipay.getInstance().getPackPageName()) != null
-                && !getPackageInfo(HookAlipay.getInstance().getPackPageName()).versionName.contentEquals("10.1.35.828")) {
-            Toast.makeText(ActMain.this, "支付宝版本不对！官方下载版本号：10.1.35.828", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private PackageInfo getPackageInfo(String packageName) {
@@ -210,27 +199,6 @@ public class ActMain extends AppCompatActivity {
             clsSubmit(null);
         }
     }
-
-    /**
-     * 在状态栏添加图标
-     */
-    private void addStatusBar() {
-        NotificationManager manager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancelAll();
-
-        PendingIntent pi = PendingIntent.getActivity(this, 0, getIntent(), 0);
-        Notification noti = new Notification.Builder(this)
-                .setTicker("程序启动成功")
-                .setContentTitle("看到我，说明我在后台正常运行")
-                .setContentText("始于：" + new SimpleDateFormat("MM-dd HH:mm:ss").format(new Date()))
-                .setSmallIcon(R.mipmap.ic_launcher)//设置图标
-                .setDefaults(Notification.DEFAULT_SOUND)//设置声音
-                .setContentIntent(pi)//点击之后的页面
-                .build();
-
-        manager.notify(17952, noti);
-    }
-
 
     /**
      * 获取权限。。有些手机很坑，明明是READ_PHONE_STATE权限，却问用户是否允许拨打电话，汗。

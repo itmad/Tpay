@@ -15,7 +15,7 @@ public class HookAlipay extends HookBase {
 
     @Override
     public void hookCreatQr() throws Error, Exception {
-        LogUtils.show("支付宝开源版暂时不免费提供学习,http://www.paohuituan.com/pay/");
+        LogUtils.show("支付宝开源版暂不免费提供学习,http://www.paohuituan.com/pay/");
     }
 
     @Override

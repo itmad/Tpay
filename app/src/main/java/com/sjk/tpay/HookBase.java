@@ -69,16 +69,20 @@ public abstract class HookBase implements IHooker {
                     mHookCount = mHookCount + 1;
                     if (mHookCount == mHookCountIndex) {
                         //注册广播
-                        ReceivedQrCreat receivedQrCreat = new ReceivedQrCreat();
                         IntentFilter intentFilter = new IntentFilter();
                         intentFilter.addAction(getRemoteAction());//主动远程的主动广播Action
-                        mContext.registerReceiver(receivedQrCreat, intentFilter);
+                        mContext.registerReceiver(new RemoteReceiver(), intentFilter);
 
-                        LogUtils.show(getAppName() + "初始化成功");
-                        hookFirst();
-                        hookBill();
-                        hookCreatQr();
-                        addRemoteTaskI();
+                        try {
+                            addRemoteTaskI();
+                            hookFirst();
+                            hookBill();
+                            hookCreatQr();
+                            LogUtils.show(getAppName() + "初始化成功");
+                        } catch (Error | Exception e) {
+                            e.printStackTrace();
+                            LogUtils.show(e.getMessage());
+                        }
                     }
                 }
             }
@@ -117,8 +121,8 @@ public abstract class HookBase implements IHooker {
      * @return
      */
     @Override
-    public String getReceiveQrActionType() {
-        return "ReceiveQrActionType." + getClass().getSimpleName();
+    public String getLocalQrActionType() {
+        return "LocalQrActionType." + getClass().getSimpleName();
     }
 
     /**
@@ -127,8 +131,8 @@ public abstract class HookBase implements IHooker {
      * @return
      */
     @Override
-    public String getReceiveBillActionType() {
-        return "ReceiveBillActionType." + getClass().getSimpleName();
+    public String getLocalBillActionType() {
+        return "LocalBillActionType." + getClass().getSimpleName();
     }
 
 
@@ -144,7 +148,7 @@ public abstract class HookBase implements IHooker {
 
     @Override
     public void doOnOtherApp(Intent intent) throws Error, Exception {
-        //LogUtils.show(intent.getStringExtra(RECV_ACTION_TYPE) + "mTaskInOtherApp" + mTaskInOtherApp);
+        LogUtils.show(intent.getStringExtra(RECV_ACTION_TYPE) + "mTaskInOtherApp" + mTaskInOtherApp);
         Set<String> set = mTaskInOtherApp.keySet();
         for (String str : set) {
             if (intent.getStringExtra(RECV_ACTION_TYPE).contentEquals(str)) {
@@ -156,7 +160,7 @@ public abstract class HookBase implements IHooker {
     /**
      * 通用的创建二维码的广播
      */
-    class ReceivedQrCreat extends BroadcastReceiver {
+    class RemoteReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
@@ -175,7 +179,7 @@ public abstract class HookBase implements IHooker {
 
     @Override
     public void addLocalTaskI() {
-        addLocalTask(getReceiveQrActionType(), new CallBackDo() {
+        addLocalTask(getLocalQrActionType(), new CallBackDo() {
             @Override
             public void callBack(Intent intent) throws Error, Exception {
                 String data = intent.getStringExtra(RECV_ACTION_DATE);
@@ -184,7 +188,7 @@ public abstract class HookBase implements IHooker {
             }
         });
 
-        addLocalTask(getReceiveBillActionType(), new CallBackDo() {
+        addLocalTask(getLocalBillActionType(), new CallBackDo() {
             @Override
             public void callBack(Intent intent) throws Error, Exception {
                 String data = intent.getStringExtra(RECV_ACTION_DATE);
